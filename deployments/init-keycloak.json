@@ -1,0 +1,92 @@
+{
+  "realm": "ledger",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      { "name": "account-read", "description": "Read accounts" },
+      { "name": "account-write", "description": "Create/update accounts" },
+      { "name": "ledger-read", "description": "Read ledger entries and balances" },
+      { "name": "ledger-write", "description": "Post ledger entries" },
+      { "name": "transfer-write", "description": "Initiate transfers" },
+      { "name": "transfer-read", "description": "Read transfer status" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "account-service",
+      "name": "Account Service",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "account-service-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "bearerOnly": false
+    },
+    {
+      "clientId": "ledger-service",
+      "name": "Ledger Service",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "ledger-service-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "transfer-service",
+      "name": "Transfer Service",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "transfer-service-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "ledger-cli",
+      "name": "Local CLI / smoke tests",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "ledger-cli-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "devuser",
+      "enabled": true,
+      "email": "devuser@ledger.local",
+      "emailVerified": true,
+      "firstName": "Dev",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "devuser",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "account-read",
+        "account-write",
+        "ledger-read",
+        "ledger-write",
+        "transfer-read",
+        "transfer-write"
+      ]
+    }
+  ]
+}
