@@ -1,0 +1,120 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_USER: ledger_user
+          POSTGRES_PASSWORD: ledger_password
+          POSTGRES_DB: account_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ledger_user -d account_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      ACCOUNT_DATABASE_URL: postgres://ledger_user:ledger_password@127.0.0.1:5432/account_db?sslmode=disable
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/checkout@v7
+        with:
+          go-version: "1.27.1"
+          cache: true
+
+      - name: Download modules
+        run: go mod download
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Install migrate
+        run: |
+          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.20.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Migrate account_db
+        run: migrate -path db/account/migrations -database "$ACCOUNT_DATABASE_URL" up
+
+      - name: Test
+        run: go test ./... -count=1
+
+      - name: Test account integration
+        run: go test ./internal/account/service -run Integration -count=1
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.27.1"
+          cache: true
+
+      - name: Build account-service
+        run: go build -o bin/account-service ./cmd/account-service
+
+      - name: Build ledger-service
+        run: go build -o bin/ledger-service ./cmd/ledger-service
+
+      - name: Build transfer-service
+        run: go build -o bin/transfer-service ./cmd/transfer-service
+
+  sqlc-check:
+    name: sqlc-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.27.1"
+          cache: true
+
+      - name: Install sqlc
+        run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+
+      - name: Regenerate account store
+        run: sqlc generate -f db/account/sqlc.yaml
+
+      - name: Fail if generated code drifted
+        run: |
+          if ! git diff --exit-code -- internal/account/store; then
+          echo "sqlc output differs from commited store; run: make sqlc-account"
+            exit 1
+          fi
