@@ -1,6 +1,9 @@
 COMPOSE_DIR := deployments
 COMPOSE := docker compose -f $(COMPOSE_DIR)/docker-compose.yml
 SERVICES := account-service ledger-service transfer-service
+ACCOUNT_DATABASE_URL ?= postgres://ledger_user:ledger_password@127.0.0.1:5432/account_db?sslmode=disable
+VAULT_ADDR ?= http://127.0.0.1:8200
+VAULT_TOKEN ?= root-token
 
 .PHONY: help up down restart ps logs pull vault-init tidy test build
 
@@ -40,4 +43,38 @@ build: ## Build all service binaries
 		echo "building $$s"; \
 		go build -o bin/$$s ./cmd/$$s; \
 	done
+
+
+run-account: ## Run account-service (host; Vault on localhost)
+	DB_CONN='$(ACCOUNT_DATABASE_URL)' \
+	VAULT_ADDR='$(VAULT_ADDR)' \
+	VAULT_TOKEN='$(VAULT_TOKEN)' \
+	go run ./cmd/account-service
+
+build-account: ## Build account-service binary
+	go build -o bin/account-service ./cmd/account-service
+
+test-account: ## Unit/handler tests for account-service
+	go test ./internal/account/...
+
+test-account-integration: ## Integration tests (Postgres  required)
+	ACCOUNT_DATABASE_URL='$(ACCOUNT_DATABASE_URL)' go test ./internal/account/service -run Integration -count=1
+
+run-ledger: ## Run ledger-service
+	go run ./cmd/ledger-service
+
+run-transfer: ## Run transfer-service
+	go run ./cmd/transfer-service
+
+migrate-account-up: ## Aplly account_db migrations
+	migrate -path db/account/migrations -database "$(ACCOUNT_DATABASE_URL)" up
+
+migrate-account-down: ## Roll back on account_db migration
+	migrate -path db/account/migrations -database "$(ACCOUNT_DATABASE_URL)" down 1
+
+sqlc-account: ## Generate account store from sqlc
+	sqlc generate -f db/account/sqlc.yaml
+
+db-account: migrate-account-up sqlc-account ## Migrate + generate account store
+
 
