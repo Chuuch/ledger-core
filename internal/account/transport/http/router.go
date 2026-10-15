@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/chuuch/ledger-core/internal/account/service"
+	"github.com/chuuch/ledger-core/internal/platform/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewRouter(svc *service.Service, pool *pgxpool.Pool) http.Handler {
+func NewRouter(svc *service.Service, pool *pgxpool.Pool, authenticator *auth.Authenticator) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.ClientIPFromRemoteAddr)
@@ -41,6 +42,16 @@ func NewRouter(svc *service.Service, pool *pgxpool.Pool) http.Handler {
 	})
 
 	r.Route("/v1/accounts", func(r chi.Router) {
+		if authenticator != nil {
+			r.Use(authenticator.Middleware)
+
+			r.With(auth.RequireRoles("account-write")).Post("/", h.CreateAccount)
+			r.With(auth.RequireRoles("account-read")).Get("/", h.ListAccounts)
+			r.With(auth.RequireRoles("account-read")).Get("/{id}", h.GetAccount)
+			r.With(auth.RequireRoles("account-write")).Patch("/{id}/status", h.UpdateStatus)
+			return
+		}
+
 		r.Post("/", h.CreateAccount)
 		r.Get("/", h.ListAccounts)
 		r.Get("/{id}", h.GetAccount)

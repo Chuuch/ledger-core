@@ -1,3 +1,4 @@
+// Package Config
 package config
 
 import (
@@ -12,6 +13,7 @@ type Config struct {
 	VaultToken string
 	VaultSecret string
 	OTELEndpoint string
+	OIDCIssuer string
 }
 
 func Load(serviceName, defaultHTTPAddr, vaultSecretPath string) (*Config, error) {
@@ -22,6 +24,7 @@ func Load(serviceName, defaultHTTPAddr, vaultSecretPath string) (*Config, error)
 		VaultToken: getenv("VAULT_TOKEN", "root-token"),
 		VaultSecret: getenv("VAULT_SECRET_PATH", vaultSecretPath),
 		OTELEndpoint: getenv("OTEL_ENDPOINT", "localhost:4317"),
+		OIDCIssuer: getenv("OIDC_ISSUER", "http://127.0.0.1:8080/realms/ledger"),
 	}
 
 	if cfg.ServiceName == "" {

@@ -29,8 +29,13 @@ func newFakeStore() *fakeStore {
 func (f *fakeStore) CreateAccount(_ context.Context, arg store.CreateAccountParams) (store.Account, error) {
 	id := uuid.New()
 	acc := store.Account{
-		ID: id, OwnerID: arg.OwnerID, Currency: arg.Currency, Status: arg.Status,
-		Version: 1, CreatedAt: time.Now().UTC(), UpdatedAt: time.Now().UTC(),
+		ID: id,
+		OwnerID: arg.OwnerID,
+		Currency: arg.Currency,
+		Status: arg.Status,
+		Version: 1,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 	}
 	f.accounts[id] = acc
 	return acc, nil
@@ -71,13 +76,13 @@ func TestCreateAndGetAccount(t *testing.T) {
 	svc := service.New(newFakeStore())
 	// pool unused by these routes; pass nil only if /readyz isn't hit.
 	// Prefer a noop: skip readyz in this test by not calling it.
-	r := accounthttp.NewRouter(svc, nil)
+	r := accounthttp.NewRouter(svc, nil, nil)
 
 	body, _ := jsonv2.Marshal(map[string]string{
 		"owner_id": "user-1",
 		"currency": "USD",
 	})
-	req := httptest.NewRequest(http.MethodPost, "/v1/accounts/", bytes.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/v1/accounts", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
@@ -102,7 +107,7 @@ func TestUpdateStatusConflict(t *testing.T) {
 	t.Parallel()
 	fs := newFakeStore()
 	svc := service.New(fs)
-	r := accounthttp.NewRouter(svc, nil)
+	r := accounthttp.NewRouter(svc, nil, nil)
 
 	acc, err := svc.Create(context.Background(), service.CreateInput{OwnerID: "u1", Currency: "USD"})
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/chuuch/ledger-core/internal/account/service"
 	"github.com/chuuch/ledger-core/internal/account/store"
 	accounthttp "github.com/chuuch/ledger-core/internal/account/transport/http"
+	"github.com/chuuch/ledger-core/internal/platform/auth"
 	"github.com/chuuch/ledger-core/internal/platform/config"
 	"github.com/chuuch/ledger-core/internal/platform/httpx"
 	"github.com/chuuch/ledger-core/internal/platform/postgres"
@@ -39,9 +40,19 @@ func New(ctx context.Context, cfg *config.Config, secrets *config.Secrets, log *
 		return nil, fmt.Errorf("postgres pool: %w", err)
 	}
 
+	var authenticator *auth.Authenticator
+	if cfg.OIDCIssuer != "" {
+		a, err := auth.NewAuthenticator(ctx, auth.Config{Issuer: cfg.OIDCIssuer})
+		if err != nil {
+			pool.Close()
+			return nil, fmt.Errorf("auth: %w", err)
+		}
+		authenticator = a
+	}
+
 	queries := store.New(pool)
 	svc := service.New(queries)
-	router := accounthttp.NewRouter(svc, pool)
+	router := accounthttp.NewRouter(svc, pool, authenticator)
 
 	return &App{
 		cfg: cfg,
