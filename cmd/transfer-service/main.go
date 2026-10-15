@@ -31,7 +31,7 @@ func run() int {
 		return 1
 	}
 
-	application, err := app.New(cfg, secrets, log)
+	application, err := app.New(context.Background(), cfg, secrets, log)
 	if err != nil {
 		log.Error("build app", "err", err)
 		return 1

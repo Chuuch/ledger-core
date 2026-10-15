@@ -51,7 +51,7 @@ func LoadVaultSecrets(addr, token, secretPath string) (*Secrets, error) {
 func stringField(data map[string]any, key string) (string, error) {
 	v, ok := data[key].(string)
 	if !ok || v == "" {
-		return "", fmt.Errorf("vault secret field &q missing or not a string", key)
+		return "", fmt.Errorf("vault secret field %q missing or not a string", key)
 	}
 	return v, nil
 }

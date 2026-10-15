@@ -7,7 +7,8 @@ VAULT_TOKEN ?= root-token
 OIDC_ISSUER ?= http://127.0.0.1:8080/realms/ledger
 KEYCLOAK_TOKEN_URL ?= http://127.0.0.1:8080/realms/ledger/protocol/openid-connect/token
 
-.PHONY: test-account test-account-integration run-account build-account token-dev help up down restart ps logs pull vault-init tidy test build
+.PHONY: test-account test-account-integration run-account build-account token-dev help
+up down restart ps logs pull vault-init tidy test build ci vet test
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf " %-16s %s\n", $$1, $$2}'
@@ -29,6 +30,15 @@ logs: ## Tail all compose logs
 
 pull: ## Pull compose images (no start)
 	$(COMPOSE) pull
+
+vet: ## go vet
+	go vet ./...
+
+test: ## All Go tests (unit; integration needs ACCOUNT_DATABASE_URL)
+	go test ./... -count=1
+
+ci: vet test build ## Local approximation of CI (no Postgres service)
+	@echo "ci ok (run integration separately if Postgres is up)"
 
 vault-init: ## Seed Vault KV secrets (stack must be up)
 	chmod +x deployments/init-vault.sh
