@@ -58,7 +58,7 @@
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
-      "secret": "ledger-cli-secret",
+      "secret": "${LEDGER_CLI_CLIENT_SECRET}",
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false
@@ -75,14 +75,14 @@
       "credentials": [
         {
           "type": "password",
-          "value": "devuser",
+          "value": "${DEV_PASSWORD}",
           "temporary": false
         }
       ],
       "realmRoles": [
         "account-read",
         "account-write",
-        "ledger-read",
+        eledger-read",
         "ledger-write",
         "transfer-read",
         "transfer-write"

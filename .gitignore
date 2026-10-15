@@ -1,0 +1,4 @@
+deployments/.env
+deployments/init-keycloak.json
+.bin/
+bin/
