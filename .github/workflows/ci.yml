@@ -53,7 +53,9 @@ jobs:
         run: go vet ./...
 
       - name: Install migrate
-        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.20.1
+        run: |
+          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.20.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - name: Migrate account_db
         run: migrate -path db/account/migrations -database "$ACCOUNT_DATABASE_URL" up
