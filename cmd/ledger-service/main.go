@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/chuuch/ledger-core/internal/account/app"
+	"github.com/chuuch/ledger-core/internal/ledger/app"
 	"github.com/chuuch/ledger-core/internal/platform/config"
 )
 
@@ -29,6 +29,10 @@ func run() int {
 	if err != nil {
 		log.Error("load vault secrets", "err", err)
 		return 1
+	}
+
+	if v := os.Getenv("DB_CONN"); v != "" {
+		secrets.DBConn = v
 	}
 
 	application, err := app.New(context.Background(), cfg, secrets, log)

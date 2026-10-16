@@ -8,7 +8,7 @@ VAULT_TOKEN ?= root-token
 OIDC_ISSUER ?= http://127.0.0.1:8080/realms/ledger
 KEYCLOAK_TOKEN_URL ?= http://127.0.0.1:8080/realms/ledger/protocol/openid-connect/token
 
-.PHONY: test-account test-account-integration run-account build-account token-dev help up down restart ps logs pull vault-init tidy test build ci vet test migrate-ledger-up migrate-ledger-down
+.PHONY: test-account test-account-integration run-account build-account token-dev help up down restart ps logs pull vault-init tidy test build ci vet test migrate-ledger-up migrate-ledger-down sqlc-ledger run-ledger build-ledger test-ledger test-ledger-integration
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf " %-16s %s\n", $$1, $$2}'
@@ -82,8 +82,20 @@ token-dev: ## Fetch Keycloak access token for devuser / ledger-cli
 	@python3 -c 'import json; json.load(open("/tmp/ledger-token.json"))["access_token"]; print("token ok -> /tmp/ledger-token.json")'
 	@echo 'Run: export ACCESS_TOKEN=$$(python3 -c '"'"'import json;print(json.load(open("/tmp/ledger-token.json"))["access_token"])'"'"')'
 
-run-ledger: ## Run ledger-service
+run-ledger: ## Run ledger-service on host
+	DB_CONN='$(LEDGER_DATABASE_URL)' \
+	VAULT_ADDR='$(VAULT_ADDR)' \
+	VAULT_TOKEN='$(VAULT_TOKEN)' \
 	go run ./cmd/ledger-service
+
+build-ledger: ## Build ledger-service binary
+	go build -o bin/ledger-service ./cmd/ledger-service
+
+test-ledger: ## Unit/handler tests for ledger-service
+	go test ./internal/ledger/...
+
+test-ledger-integration: ## Integration tests (Postgres ledger_db)
+	LEDGER_DATABASE_URL='$(LEDGER_DATABASE_URL)' go test ./internal/ledger/service -run Integration -count=1
 
 run-transfer: ## Run transfer-service
 	go run ./cmd/transfer-service
@@ -102,6 +114,9 @@ migrate-ledger-down: ## Roll back one ledger_db migration
 
 sqlc-account: ## Generate account store from sqlc
 	sqlc generate -f db/account/sqlc.yaml
+
+sqlc-ledger: ## Generate ledger store from sqlc
+	sqlc generate -f db/ledger/sqlc.yaml
 
 db-account: migrate-account-up sqlc-account ## Migrate + generate account store
 
