@@ -86,6 +86,7 @@ run-ledger: ## Run ledger-service on host
 	DB_CONN='$(LEDGER_DATABASE_URL)' \
 	VAULT_ADDR='$(VAULT_ADDR)' \
 	VAULT_TOKEN='$(VAULT_TOKEN)' \
+	OIDC_ISSUER='$(OIDC_ISSUER)' \
 	go run ./cmd/ledger-service
 
 build-ledger: ## Build ledger-service binary
