@@ -22,10 +22,10 @@ type Authenticator struct {
 }
 
 type Claims struct {
-	Issuer string `json:"iss"`
-	Subject string `json:"sub"`
-	AZP string `json:"azp"`
-	Expiry int64 `json:"exp"`
+	Issuer      string `json:"iss"`
+	Subject     string `json:"sub"`
+	AZP         string `json:"azp"`
+	Expiry      int64  `json:"exp"`
 	RealmAccess struct {
 		Roles []string `json:"roles"`
 	} `json:"realm_access"`
@@ -45,7 +45,7 @@ func NewAuthenticator(ctx context.Context, cfg Config) (*Authenticator, error) {
 	}
 
 	var disc struct {
-		Issuer string `json:"issuer"`
+		Issuer  string `json:"issuer"`
 		JWKSURL string `json:"jwks_uri"`
 	}
 	if err := provider.Claims(&disc); err != nil {
@@ -101,7 +101,7 @@ func (a *Authenticator) verifyAccessToken(ctx context.Context, raw string) (Clai
 	return claims, nil
 }
 
-func RequireRoles (roles ...string) func(http.Handler) http.Handler {
+func RequireRoles(roles ...string) func(http.Handler) http.Handler {
 	needed := roles
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

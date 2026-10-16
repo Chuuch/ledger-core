@@ -12,7 +12,7 @@ import (
 type Server struct {
 	name string
 	http *http.Server
-	log *slog.Logger
+	log  *slog.Logger
 }
 
 func NewServer(name, addr string, handler http.Handler, log *slog.Logger) *Server {
@@ -22,14 +22,14 @@ func NewServer(name, addr string, handler http.Handler, log *slog.Logger) *Serve
 
 	return &Server{
 		name: name,
-		log: log,
+		log:  log,
 		http: &http.Server{
-			Addr: addr,
-			Handler: handler,
+			Addr:              addr,
+			Handler:           handler,
 			ReadHeaderTimeout: 5 * time.Second,
-			ReadTimeout: 15 * time.Second,
-			WriteTimeout: 15 * time.Second,
-			IdleTimeout: 60 * time.Second,
+			ReadTimeout:       15 * time.Second,
+			WriteTimeout:      15 * time.Second,
+			IdleTimeout:       60 * time.Second,
 		},
 	}
 }
@@ -47,10 +47,10 @@ func (s *Server) Run(ctx context.Context) error {
 	}()
 
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		shurdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		
+
 		s.log.Info("http server shutting down", "service", s.name)
 		if err := s.http.Shutdown(shurdownCtx); err != nil {
 			return err

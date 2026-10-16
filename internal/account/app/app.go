@@ -17,14 +17,14 @@ import (
 )
 
 type App struct {
-	cfg *config.Config
-	log *slog.Logger
-	pool *pgxpool.Pool
-	store *store.Queries
+	cfg    *config.Config
+	log    *slog.Logger
+	pool   *pgxpool.Pool
+	store  *store.Queries
 	server *httpx.Server
 }
 
-func New(ctx context.Context, cfg *config.Config, secrets *config.Secrets, log *slog.Logger) (*App, error ) {
+func New(ctx context.Context, cfg *config.Config, secrets *config.Secrets, log *slog.Logger) (*App, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("config is required")
 	}
@@ -55,10 +55,10 @@ func New(ctx context.Context, cfg *config.Config, secrets *config.Secrets, log *
 	router := accounthttp.NewRouter(svc, pool, authenticator)
 
 	return &App{
-		cfg: cfg,
-		log: log,
-		pool: pool,
-		store: queries,
+		cfg:    cfg,
+		log:    log,
+		pool:   pool,
+		store:  queries,
 		server: httpx.NewServer(cfg.ServiceName, cfg.HTTPAddr, router, log),
 	}, nil
 }

@@ -19,14 +19,14 @@ func NewHandler(svc *service.Service) *Handler {
 }
 
 type createAccountRequest struct {
-	OwnerID string `json:"owner_id"`
+	OwnerID  string `json:"owner_id"`
 	Currency string `json:"currency"`
-	Status string `json:"status,omitempty"`
+	Status   string `json:"status,omitempty"`
 }
 
 type updateStatusRequest struct {
-	Status string `json:"status"`
-	Version int64 `json:"version"`
+	Status  string `json:"status"`
+	Version int64  `json:"version"`
 }
 
 func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
@@ -37,9 +37,9 @@ func (h *Handler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	acc, err := h.svc.Create(r.Context(), service.CreateInput{
-		OwnerID: req.OwnerID,
+		OwnerID:  req.OwnerID,
 		Currency: req.Currency,
-		Status: req.Status,
+		Status:   req.Status,
 	})
 	if err != nil {
 		writeServiceError(w, err)
@@ -85,10 +85,10 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid json")
 		return
 	}
-	
+
 	acc, err := h.svc.UpdateStatus(r.Context(), service.UpdateStatusInput{
-		ID: id,
-		Status: req.Status,
+		ID:      id,
+		Status:  req.Status,
 		Version: req.Version,
 	})
 	if err != nil {

@@ -9,8 +9,8 @@ import (
 )
 
 type Secrets struct {
-	DBConn string
-	RedisAddr string
+	DBConn       string
+	RedisAddr    string
 	OTELEndpoint string
 }
 
@@ -42,8 +42,8 @@ func LoadVaultSecrets(addr, token, secretPath string) (*Secrets, error) {
 	slog.Info("loaded secrets from vault", "path", "secret/"+secretPath)
 
 	return &Secrets{
-		DBConn: db,
-		RedisAddr: redis,
+		DBConn:       db,
+		RedisAddr:    redis,
 		OTELEndpoint: otel,
 	}, nil
 }

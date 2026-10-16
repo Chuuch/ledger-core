@@ -2,13 +2,13 @@ COMPOSE_DIR := deployments
 COMPOSE := docker compose -f $(COMPOSE_DIR)/docker-compose.yml
 SERVICES := account-service ledger-service transfer-service
 ACCOUNT_DATABASE_URL ?= postgres://ledger_user:ledger_password@127.0.0.1:5432/account_db?sslmode=disable
+LEDGER_DATABASE_URL ?= postgres://ledger_user:ledger_password@127.0.0.1:5432/ledger_db?sslmode=disable
 VAULT_ADDR ?= http://127.0.0.1:8200
 VAULT_TOKEN ?= root-token
 OIDC_ISSUER ?= http://127.0.0.1:8080/realms/ledger
 KEYCLOAK_TOKEN_URL ?= http://127.0.0.1:8080/realms/ledger/protocol/openid-connect/token
 
-.PHONY: test-account test-account-integration run-account build-account token-dev help
-up down restart ps logs pull vault-init tidy test build ci vet test
+.PHONY: test-account test-account-integration run-account build-account token-dev help up down restart ps logs pull vault-init tidy test build ci vet test migrate-ledger-up migrate-ledger-down
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf " %-16s %s\n", $$1, $$2}'
@@ -46,9 +46,6 @@ vault-init: ## Seed Vault KV secrets (stack must be up)
 
 tidy: ## go mod tidy
 	go mod tidy
-
-test: ## Run Go tests
-	go test ./...
 
 build: ## Build all service binaries
 	@for s in $(SERVICES); do \
@@ -96,6 +93,12 @@ migrate-account-up: ## Aplly account_db migrations
 
 migrate-account-down: ## Roll back on account_db migration
 	migrate -path db/account/migrations -database "$(ACCOUNT_DATABASE_URL)" down 1
+
+migrate-ledger-up: ## Apply ledger_db migrations
+	migrate -path db/ledger/migrations -database "$(LEDGER_DATABASE_URL)" up
+
+migrate-ledger-down: ## Roll back one ledger_db migration
+	migrate -path db/ledger/migrations -database "$(LEDGER_DATABASE_URL)" down 1
 
 sqlc-account: ## Generate account store from sqlc
 	sqlc generate -f db/account/sqlc.yaml

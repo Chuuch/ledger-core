@@ -29,11 +29,11 @@ func newFakeStore() *fakeStore {
 func (f *fakeStore) CreateAccount(_ context.Context, arg store.CreateAccountParams) (store.Account, error) {
 	id := uuid.New()
 	acc := store.Account{
-		ID: id,
-		OwnerID: arg.OwnerID,
-		Currency: arg.Currency,
-		Status: arg.Status,
-		Version: 1,
+		ID:        id,
+		OwnerID:   arg.OwnerID,
+		Currency:  arg.Currency,
+		Status:    arg.Status,
+		Version:   1,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	}

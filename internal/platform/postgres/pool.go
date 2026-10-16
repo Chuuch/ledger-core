@@ -10,21 +10,21 @@ import (
 )
 
 type PoolConfig struct {
-	ConnString string
-	MaxConns int32
-	MinConns int32
-	MaxConnLifetime time.Duration
-	MaxConnIdleTime time.Duration
+	ConnString        string
+	MaxConns          int32
+	MinConns          int32
+	MaxConnLifetime   time.Duration
+	MaxConnIdleTime   time.Duration
 	HealthCheckPeriod time.Duration
 }
 
 func NewPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 	return NewPoolWithConfig(ctx, PoolConfig{
-		ConnString: connString,
-		MaxConns: 10,
-		MinConns: 1,
-		MaxConnLifetime: time.Hour,
-		MaxConnIdleTime: 30 * time.Minute,
+		ConnString:        connString,
+		MaxConns:          10,
+		MinConns:          1,
+		MaxConnLifetime:   time.Hour,
+		MaxConnIdleTime:   30 * time.Minute,
 		HealthCheckPeriod: time.Minute,
 	})
 }
@@ -63,7 +63,7 @@ func NewPoolWithConfig(ctx context.Context, cfg PoolConfig) (*pgxpool.Pool, erro
 	pingCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := pool.Ping(pingCtx); err != nil {
-		pool.Close();
+		pool.Close()
 		return nil, fmt.Errorf("postgres: ping: %w", err)
 	}
 

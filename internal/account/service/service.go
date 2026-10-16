@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("account not found")
-	ErrConflict = errors.New("account version conflict")
-	ErrInvalidInput = errors.New("invalid input")
+	ErrNotFound      = errors.New("account not found")
+	ErrConflict      = errors.New("account version conflict")
+	ErrInvalidInput  = errors.New("invalid input")
 	ErrInvalidStatus = errors.New("invalid status")
 )
 
@@ -28,9 +28,9 @@ func New(q AccountStore) *Service {
 }
 
 type CreateInput struct {
-	OwnerID string
+	OwnerID  string
 	Currency string
-	Status string
+	Status   string
 }
 
 func (s *Service) Create(ctx context.Context, in CreateInput) (store.Account, error) {
@@ -47,9 +47,9 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (store.Account, er
 	}
 
 	return s.q.CreateAccount(ctx, store.CreateAccountParams{
-		OwnerID: in.OwnerID,
+		OwnerID:  in.OwnerID,
 		Currency: in.Currency,
-		Status: in.Status,
+		Status:   in.Status,
 	})
 }
 
@@ -73,8 +73,8 @@ func (s *Service) ListByOwner(ctx context.Context, ownerID string) ([]store.Acco
 }
 
 type UpdateStatusInput struct {
-	ID uuid.UUID
-	Status string
+	ID      uuid.UUID
+	Status  string
 	Version int64
 }
 
@@ -87,8 +87,8 @@ func (s *Service) UpdateStatus(ctx context.Context, in UpdateStatusInput) (store
 	}
 
 	acc, err := s.q.UpdateAccountStatus(ctx, store.UpdateAccountStatusParams{
-		ID: in.ID,
-		Status: in.Status,
+		ID:      in.ID,
+		Status:  in.Status,
 		Version: in.Version,
 	})
 	if err != nil {
